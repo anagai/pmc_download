@@ -3,21 +3,23 @@ import os
 import fitz  # PyMuPDF for PDF to text conversion
 import pandas as pd
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import quote
 
-# Need these libraries: frontend, tools
+# Need these libraries also: frontend, tools, PyMuPDF
 # Need to create /static folder
-
-# 📂 Folder to store text files
-SAVE_DIR = "articles"
-os.makedirs(SAVE_DIR, exist_ok=True)
+inp = input("Enter search term: ")
+SEARCH_TERM = quote(inp)
 
 # 🔍 Search term (change for a different rare disease)
-SEARCH_TERM = "Cobb Syndrome"
-MAX_ARTICLES = 20  # Limit the number of downloaded articles
+MAX_ARTICLES = 2  # Limit the number of downloaded articles
+
+# 📂 Folder to store text files
+SAVE_DIR = SEARCH_TERM.replace(" ", "_")
+os.makedirs(SAVE_DIR, exist_ok=True)
 
 # 🔗 Base URL for PubMed Central
 PMC_BASE_URL = "https://www.ncbi.nlm.nih.gov/pmc/articles/"
+# Base URL for PMC articles
 PDF_BASE_URL = "https://pmc.ncbi.nlm.nih.gov/articles/"
 
 def search_pubmed_open_access(search_term, max_results=20):
@@ -35,6 +37,7 @@ def search_pubmed_open_access(search_term, max_results=20):
     response.raise_for_status()
 
     root = BeautifulSoup(response.text, "xml")
+    #print(root.prettify())
     pmc_ids = [id_elem.text for id_elem in root.find_all("Id")]
 
     print(f"✅ Found {len(pmc_ids)} free articles.")
@@ -52,13 +55,11 @@ def get_pdf_link(pmc_id):
         response.raise_for_status()
         
         soup = BeautifulSoup(response.text, "html.parser")
-
+        #print(soup.prettify())
         # Find the correct PDF link
-        # https://pmc.ncbi.nlm.nih.gov/articles/PMC11674947/
         pdf_link = None
         for link in soup.find_all("a", href=True):
             if "pdf" in link["href"]:
-                #pdf_link = urljoin(PDF_BASE_URL, link["href"])
                 pdf_link = f"{PDF_BASE_URL}PMC{pmc_id}/{link["href"]}"
                 break
         
@@ -118,14 +119,14 @@ def main():
         # Step 4: Download and convert PDF to text
         text_filename = os.path.join(SAVE_DIR, f"PMC_{pmc_id}.txt")
         if download_and_convert_pdf(pdf_url, text_filename):
-            downloaded_texts.append({"PMC_ID": pmc_id, "Text_File": text_filename})
+            downloaded_texts.append({"PMC_ID": pmc_id, "PDF_URL": pdf_url, "Text_File": text_filename})
 
-    # # Step 5: Save metadata
-    # if downloaded_texts:
-    #     df = pd.DataFrame(downloaded_texts)
-    #     csv_filename = os.path.join(SAVE_DIR, "downloaded_articles.csv")
-    #     df.to_csv(csv_filename, index=False)
-    #     print(f"\n📂 Saved metadata to {csv_filename}")
+    # Step 5: Save metadata
+    if downloaded_texts:
+        df = pd.DataFrame(downloaded_texts)
+        csv_filename = os.path.join(SAVE_DIR, "downloaded_articles.csv")
+        df.to_csv(csv_filename, index=False)
+        print(f"\n📂 Saved metadata to {csv_filename}")
 
 if __name__ == "__main__":
     main()

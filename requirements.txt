@@ -1,0 +1,6 @@
+fitz
+pandas
+bs4
+PyMuPDF
+tools
+frontend
