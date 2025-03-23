@@ -5,8 +5,13 @@
 
 Running download_pmc_pdf.py
 
-1) Install libraries
+1) Install libraries from the project root directory
    pip install -r requirements.txt
 2) Run script 
    python .\download_pmc_pdf.pyenv
+3) Will prompt you to enter the disease
+
+It is set to download 20 documents. You can change this by changing the 
+MAX_ARTICLES constant in the script. The extracted texts will be saved to directory 
+of the disease name. Each directory will have manifest file with urls to original pdfs.
 

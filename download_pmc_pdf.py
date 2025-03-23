@@ -11,7 +11,7 @@ inp = input("Enter search term: ")
 SEARCH_TERM = quote(inp)
 
 # 🔍 Search term (change for a different rare disease)
-MAX_ARTICLES = 2  # Limit the number of downloaded articles
+MAX_ARTICLES = 20  # Limit the number of downloaded articles
 
 # 📂 Folder to store text files
 SAVE_DIR = SEARCH_TERM.replace(" ", "_")
